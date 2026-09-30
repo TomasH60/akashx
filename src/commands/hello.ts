@@ -1,4 +1,5 @@
 import { Args, Command } from '@oclif/core';
+import chalk from 'chalk';
 
 export default class Hello extends Command {
   static override description = 'Say hello';
@@ -12,6 +13,6 @@ export default class Hello extends Command {
   async run(): Promise<void> {
     const { args } = await this.parse(Hello);
 
-    this.log(`Hello, ${args.name}!`);
+    this.log(chalk.green(`Hello, ${args.name}!`));
   }
 }

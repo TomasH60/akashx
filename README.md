@@ -1,45 +1,34 @@
 # akashx
 
-Minimal TypeScript CLI built with `@oclif/core`. Requires Node.js 22.13+ (22.x)
-or Node.js 24+ and npm.
+A TypeScript CLI for Akash. Right now it checks provider status on the `sandbox-2` network.
 
-Install dependencies:
+Requires npm and Node.js 22.18+ (22.x) or 24.x. No wallet or separate `akt` install is needed.
+
+## Try it
 
 ```sh
 npm ci
+npm run dev -- provider status akash1rk090a6mq9gvm0h6ljf8kz8mrxglwwxsk4srxh
 ```
 
-Run locally from TypeScript, without building:
+That provider was online when checked on October 1, 2026; sandbox providers may go offline.
+Use another provider address as the last argument, or set `AKASHX_PROVIDER` and omit the argument.
 
 ```sh
 npm run dev -- --help
 npm run dev -- hello
-npm run dev -- hello Tomas
 ```
 
-Build and run the compiled CLI:
+## Build and check
 
 ```sh
 npm run build
-node bin/run.js --help
-node bin/run.js hello
-```
-
-Run tests and quality checks:
-
-```sh
+node bin/run.js provider status akash1rk090a6mq9gvm0h6ljf8kz8mrxglwwxsk4srxh
 npm test
 npm run typecheck
 npm run lint
-npm run format
+npx prettier --check .
 ```
 
-`bin/` contains the development and production entry points, `src/commands/`
-contains oclif commands, `test/` contains CLI integration tests, and `dist/`
-contains generated JavaScript.
-
-Directories are reserved for `wallet`, `fund`, `tenant`, `provider`, and `config`.
-Add a command such as `src/commands/wallet/list.ts` to expose `akashx wallet list`;
-use `src/commands/wallet/index.ts` for `akashx wallet`. Each command exports a
-default class extending oclif's `Command`. Empty directories do not expose commands.
-No Akash or EVM business logic is included.
+Commands live in `src/commands/`; service code lives in `src/services/`. Tests are grouped
+under `test/unit/`, `test/commands/`, and `test/integration/`.
