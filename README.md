@@ -1,7 +1,7 @@
 # akashx
 
-Minimal TypeScript CLI built with `@oclif/core`. Requires Node.js 22.13+ (22.x)
-or Node.js 24+ and npm.
+Minimal TypeScript CLI built with `@oclif/core`. Requires Node.js 22.18+ (22.x)
+or Node.js 24.x and npm.
 
 Install dependencies:
 
@@ -42,4 +42,24 @@ Directories are reserved for `wallet`, `fund`, `tenant`, `provider`, and `config
 Add a command such as `src/commands/wallet/list.ts` to expose `akashx wallet list`;
 use `src/commands/wallet/index.ts` for `akashx wallet`. Each command exports a
 default class extending oclif's `Command`. Empty directories do not expose commands.
-No Akash or EVM business logic is included.
+
+## Akash sandbox provider status
+
+The CLI uses the Akash TypeScript SDK and connects to the `sandbox-2` gRPC endpoint.
+Check a provider with its Akash address:
+
+```sh
+npm run dev -- provider status akash1...
+```
+
+To run the command without an address argument, set `AKASHX_PROVIDER`:
+
+```sh
+AKASHX_PROVIDER=akash1... npm run dev -- provider status
+```
+
+The command queries the provider record on the sandbox chain, then contacts its
+gateway for live status. It prints the network, provider address, and `online`
+when the provider responds without errors. An invalid address, missing provider,
+or failed provider request produces an error. No separate Akash CLI or wallet is
+needed for this read-only command.

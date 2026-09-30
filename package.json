@@ -5,7 +5,7 @@
   "description": "A TypeScript CLI built with oclif",
   "type": "module",
   "engines": {
-    "node": "^22.13.0 || >=24.0.0"
+    "node": "^22.18.0 || ^24.0.0"
   },
   "bin": {
     "akashx": "bin/run.js"
@@ -30,6 +30,7 @@
     "topicSeparator": " "
   },
   "dependencies": {
+    "@akashnetwork/chain-sdk": "1.0.0-alpha.45",
     "@oclif/core": "^5.1.2"
   },
   "devDependencies": {
