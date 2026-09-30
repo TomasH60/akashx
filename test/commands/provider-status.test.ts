@@ -20,9 +20,9 @@ vi.mock('@akashnetwork/chain-sdk', () => ({
   }),
 }));
 
-import ProviderStatus from '../src/commands/provider/status.js';
+import ProviderStatus from '../../src/commands/provider/status.js';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = fileURLToPath(new URL('../../', import.meta.url));
 
 afterEach(() => {
   vi.restoreAllMocks();

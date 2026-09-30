@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AkashService, type AkashApi } from '../src/services/akash-service.js';
+import { AkashService, type AkashApi } from '../../src/services/akash-service.js';
 
 const provider = 'akash1wxr49evm8hddnx9ujsdtd86gk46s7ejnccqfmy';
 

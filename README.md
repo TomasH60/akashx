@@ -38,6 +38,9 @@ npm run format
 contains oclif commands, `test/` contains CLI integration tests, and `dist/`
 contains generated JavaScript.
 
+Tests are grouped under `test/unit/` for service logic, `test/commands/` for
+command behavior, and `test/integration/` for tests that run the CLI as a process.
+
 Directories are reserved for `wallet`, `fund`, `tenant`, `provider`, and `config`.
 Add a command such as `src/commands/wallet/list.ts` to expose `akashx wallet list`;
 use `src/commands/wallet/index.ts` for `akashx wallet`. Each command exports a
