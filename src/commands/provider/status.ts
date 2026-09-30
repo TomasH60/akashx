@@ -1,4 +1,5 @@
 import { Args, Command } from '@oclif/core';
+import chalk from 'chalk';
 import { AkashService, AkashServiceError } from '../../services/akash-service.js';
 
 export default class ProviderStatus extends Command {
@@ -23,9 +24,9 @@ export default class ProviderStatus extends Command {
 
     try {
       const result = await new AkashService().getProviderStatus(provider);
-      this.log(`Network: ${result.network}`);
-      this.log(`Provider: ${result.provider}`);
-      this.log(`Status: ${result.status}`);
+      this.log(`${chalk.bold('Network:')} ${chalk.cyan(result.network)}`);
+      this.log(`${chalk.bold('Provider:')} ${chalk.yellow(result.provider)}`);
+      this.log(`${chalk.bold('Status:')} ${chalk.green(result.status)}`);
     } catch (error) {
       if (error instanceof AkashServiceError) {
         this.error(error.message);

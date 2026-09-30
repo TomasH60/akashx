@@ -1,4 +1,6 @@
 import { fileURLToPath } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
+import chalk from 'chalk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const provider = 'akash1wxr49evm8hddnx9ujsdtd86gk46s7ejnccqfmy';
@@ -23,8 +25,10 @@ vi.mock('@akashnetwork/chain-sdk', () => ({
 import ProviderStatus from '../../src/commands/provider/status.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
+const originalColorLevel = chalk.level;
 
 afterEach(() => {
+  chalk.level = originalColorLevel;
   vi.restoreAllMocks();
   vi.clearAllMocks();
   delete process.env.AKASHX_PROVIDER;
@@ -32,6 +36,7 @@ afterEach(() => {
 
 describe('provider status command', () => {
   it('displays status from mocked Akash SDK responses', async () => {
+    chalk.level = 1;
     mocks.getProvider.mockResolvedValue({
       provider: { owner: provider, hostUri: 'https://provider.example.com:8443' },
     });
@@ -43,7 +48,12 @@ describe('provider status command', () => {
 
     await ProviderStatus.run([provider], root);
 
-    expect(output).toEqual(['Network: sandbox-2', `Provider: ${provider}`, 'Status: online']);
+    expect(output.map(stripVTControlCharacters)).toEqual([
+      'Network: sandbox-2',
+      `Provider: ${provider}`,
+      'Status: online',
+    ]);
+    expect(output[2]).toContain('\u001b[32m');
     expect(mocks.getProvider).toHaveBeenCalledWith({ owner: provider });
     expect(mocks.getStatus).toHaveBeenCalledOnce();
     expect(mocks.disposeChain).toHaveBeenCalledOnce();
@@ -63,6 +73,6 @@ describe('provider status command', () => {
 
     await ProviderStatus.run([], root);
 
-    expect(output).toContain(`Provider: ${provider}`);
+    expect(output.map(stripVTControlCharacters)).toContain(`Provider: ${provider}`);
   });
 });
