@@ -1,0 +1,45 @@
+{
+  "name": "akashx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A TypeScript CLI built with oclif",
+  "type": "module",
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
+  "bin": {
+    "akashx": "bin/run.js"
+  },
+  "files": [
+    "bin/run.js",
+    "dist"
+  ],
+  "scripts": {
+    "dev": "node --import tsx bin/dev.js",
+    "build": "tsc",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "prepack": "npm run build"
+  },
+  "oclif": {
+    "bin": "akashx",
+    "dirname": "akashx",
+    "commands": "./dist/commands",
+    "topicSeparator": " "
+  },
+  "dependencies": {
+    "@oclif/core": "^5.1.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.4",
+    "eslint": "^10.11.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^4.1.11"
+  }
+}
