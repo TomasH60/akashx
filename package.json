@@ -31,8 +31,12 @@
   },
   "dependencies": {
     "@akashnetwork/chain-sdk": "1.0.0-alpha.45",
+    "@cosmjs/proto-signing": "~0.38.0",
     "@oclif/core": "^5.1.2",
-    "chalk": "^6.0.1"
+    "@skip-go/client": "^1.6.6",
+    "chalk": "^6.0.1",
+    "protobufjs": "^8.8.0",
+    "viem": "^2.57.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

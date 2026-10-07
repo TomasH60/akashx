@@ -19,6 +19,19 @@ describe('CLI', () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('USAGE');
     expect(result.stdout).toContain('hello');
+    expect(result.stdout).toContain('bridge');
+    expect(result.stdout).toContain('wallet');
+
+    const bridgeHelp = runCli('bridge', '--help');
+    expect(bridgeHelp.status, bridgeHelp.stderr).toBe(0);
+    expect(bridgeHelp.stdout).toContain('quote');
+    expect(bridgeHelp.stdout).toContain('send');
+
+    const walletHelp = runCli('wallet', '--help');
+    expect(walletHelp.status, walletHelp.stderr).toBe(0);
+    expect(walletHelp.stdout).toContain('create');
+    expect(walletHelp.stdout).toContain('import');
+    expect(walletHelp.stdout).toContain('address');
   });
 
   it('greets the world by default', () => {
