@@ -3,3 +3,7 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
+
+# Documentation build artifacts
+website/.astro/
+website/src/content/docs/guides/

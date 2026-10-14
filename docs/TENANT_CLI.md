@@ -6,16 +6,29 @@ Windows firewall/port forwarding, and `/etc/hosts` remain in
 These commands use the pinned Akash SDK directly, not an installed `provider-services` binary.
 The guide's `sandbox-2` is a public sandbox chain with a locally hosted provider.
 
+## Install the CLI
+
+From the repository root, build and link the CLI before using the commands below:
+
+```sh
+npm ci
+npm run build
+npm link
+akashx --help
+```
+
+After updating the source, run `npm run build` again.
+
 ## Configuration and diagnostics
 
 ```sh
-npm run dev -- config show
-npm run dev -- config set network sandbox-2
-npm run dev -- config set rpc https://rpc.sandbox-2.aksh.pw:443
-npm run dev -- config set grpc https://grpc.sandbox-2.aksh.pw:443
-npm run dev -- config set walletFile /absolute/path/to/wallet.json
-npm run dev -- doctor
-npm run dev -- provider status akash1_PROVIDER_ADDRESS
+akashx config show
+akashx config set network sandbox-2
+akashx config set rpc https://rpc.sandbox-2.aksh.pw:443
+akashx config set grpc https://grpc.sandbox-2.aksh.pw:443
+akashx config set walletFile /absolute/path/to/wallet.json
+akashx doctor
+akashx provider status akash1_PROVIDER_ADDRESS
 ```
 
 Configuration precedence: command flags, environment variables, saved configuration,
@@ -42,13 +55,13 @@ Reuse `wallet create`, `wallet import`, and `wallet address`. The CLI password i
 separate from MetaMask's password and the source EVM private key.
 
 ```sh
-npm run dev -- wallet balance
+akashx wallet balance
 # A public address can be inspected without unlocking a wallet:
-npm run dev -- wallet balance akash1_ADDRESS
-npm run dev -- fund mint-act 5000000uakt --yes
-npm run dev -- wallet balance
-npm run dev -- cert create --yes
-npm run dev -- cert status
+akashx wallet balance akash1_ADDRESS
+akashx fund mint-act 5000000uakt --yes
+akashx wallet balance
+akashx cert create --yes
+akashx cert status
 ```
 
 Get sandbox AKT through the faucet in the lab guide. `mint-act` burns the explicit
@@ -68,19 +81,19 @@ The following values are examples: use the live minimum deposit from `doctor` an
 review the SDL's pricing cap. All mutation commands require `--yes`.
 
 ```sh
-npm run dev -- deployment init web.yaml
+akashx deployment init web.yaml
 # Edit image, resources, placement attributes, and pricing before deployment.
-npm run dev -- deployment validate web.yaml
+akashx deployment validate web.yaml
 
 export DSEQ="$(date +%s)"
-npm run dev -- deployment create web.yaml --dseq "$DSEQ" --deposit 500000uact --yes
-npm run dev -- deployment bids "$DSEQ"
-npm run dev -- lease create "$DSEQ" --provider akash1_PROVIDER_ADDRESS --gseq 1 --oseq 1 --bseq 1 --yes
-npm run dev -- lease list "$DSEQ"
-npm run dev -- deployment manifest send web.yaml "$DSEQ" --provider akash1_PROVIDER_ADDRESS --yes
-npm run dev -- deployment status "$DSEQ" --workload --provider akash1_PROVIDER_ADDRESS
-npm run dev -- deployment logs "$DSEQ" --provider akash1_PROVIDER_ADDRESS --follow
-npm run dev -- deployment close "$DSEQ" --yes
+akashx deployment create web.yaml --dseq "$DSEQ" --deposit 500000uact --yes
+akashx deployment bids "$DSEQ"
+akashx lease create "$DSEQ" --provider akash1_PROVIDER_ADDRESS --gseq 1 --oseq 1 --bseq 1 --yes
+akashx lease list "$DSEQ"
+akashx deployment manifest send web.yaml "$DSEQ" --provider akash1_PROVIDER_ADDRESS --yes
+akashx deployment status "$DSEQ" --workload --provider akash1_PROVIDER_ADDRESS
+akashx deployment logs "$DSEQ" --provider akash1_PROVIDER_ADDRESS --follow
+akashx deployment close "$DSEQ" --yes
 ```
 
 Use the actual group/order/bid sequences printed by `deployment bids`; the example
@@ -96,7 +109,7 @@ units, avoiding floating-point conversions.
 The web template is optional. For SSH, use your guide's SSH SDL and an existing SSH key:
 
 ```sh
-npm run dev -- deployment ssh "$DSEQ" --service ssh --user akash \
+akashx deployment ssh "$DSEQ" --service ssh --user akash \
   --identity "$HOME/.ssh/akash_lab_ed25519" --port 2222
 ```
 
@@ -110,7 +123,7 @@ After funding and certificate publication, an explicit provider can be used for 
 full workflow. The SDL's pricing caps bound the bids you have authorized.
 
 ```sh
-npm run dev -- deployment deploy web.yaml --dseq "$DSEQ" \
+akashx deployment deploy web.yaml --dseq "$DSEQ" \
   --deposit 500000uact --provider akash1_PROVIDER_ADDRESS --yes
 ```
 
@@ -122,8 +135,8 @@ A timeout leaves the deployment open and potentially accruing charges.
 After an interruption, inspect chain state first:
 
 ```sh
-npm run dev -- deployment status "$DSEQ"
-npm run dev -- deployment deploy web.yaml --dseq "$DSEQ" \
+akashx deployment status "$DSEQ"
+akashx deployment deploy web.yaml --dseq "$DSEQ" \
   --provider akash1_PROVIDER_ADDRESS --resume --yes
 ```
 

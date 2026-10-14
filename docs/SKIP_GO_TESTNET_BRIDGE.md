@@ -16,12 +16,12 @@ Skip returned this route in a read-only quote on 2026-10-08: two route
 transactions, no swap, and required addresses on `11155111`, `injective-888`,
 `provider`, and `osmo-test-5`. Route availability can change.
 
-**Current test status:** quoting is verified through the Skip API; an end-to-end
-CLI transfer is not verified. The wallet now uses Injective-specific derivation
-(`m/44'/60'/0'/0/0`), Ethereum-style address hashing, and Keccak direct signing
-for `inj` accounts. These are covered by offline regression tests. Complete the
-read-only steps below now; use the send step only after resolving the execution
-check in step 4. A successful quote alone does not establish execution support.
+**Current test status:** one end-to-end CLI transfer completed successfully on
+2026-10-14. Skip reported `STATE_COMPLETED_SUCCESS` for the onward Injective
+transaction, and the expected USDC IBC balance was confirmed on Osmosis testnet.
+The [destination transaction](https://mintscan.io/osmosis-testnet/txs/6894854CCBC22AC1D3A9F1AFEDCB68F484D7946DB1E9048165394FC7278DEBC9)
+provides the delivery record. This verifies that tested route, not future route
+availability. Follow the signer and gas checks below before a new transfer.
 
 ## 1. Prepare the destination and dependencies
 
@@ -38,7 +38,9 @@ You need:
 Run from the repository root:
 
 ```sh
-npm install
+npm ci
+npm run build
+npm link
 export OSMOSIS_ADDRESS='osmo1_YOUR_TESTNET_ADDRESS'
 ```
 
@@ -48,7 +50,7 @@ an IBC token representation. There is no AKT conversion in this test.
 ## 2. Request a quote — no wallet secrets needed
 
 ```sh
-npm run dev -- bridge quote \
+akashx bridge quote \
   --environment testnet \
   --amount 1 \
   --from-chain 11155111 \
@@ -105,7 +107,7 @@ Use your existing CLI wallet password if a wallet already exists. For a new
 wallet, choose at least 12 characters and run:
 
 ```sh
-npm run dev -- wallet create
+akashx wallet create
 ```
 
 Back up the recovery phrase printed by wallet creation. Do not run creation
@@ -142,7 +144,7 @@ Relevant implementation: `src/services/skip-service.ts` and
 address by default. To display the Injective signer used by the bridge, run:
 
 ```sh
-npm run dev -- wallet address --prefix inj
+akashx wallet address --prefix inj
 ```
 
 Use the same `--wallet-file` or `AKASHX_WALLET_FILE` as the bridge command.
@@ -156,8 +158,9 @@ If an attempt has already broadcast the source transaction, record its hash
 and inspect that transfer before sending again. Funding the gas account does
 not resume an exited CLI process, and `bridge send` starts a new transfer.
 
-**End-to-end execution remains unverified, and there is no CLI preflight command
-that proves it.** Offline signer tests do not establish successful route execution.
+**There is no CLI preflight command that proves a new transfer will complete.**
+The successful test above does not replace checking the current route, signer,
+and gas balances. Offline signer tests alone do not establish route execution.
 
 The previous prefix-only signer caused `pubKey does not match signer address`
 on Injective. The corrected signer derives a different address. It does not
@@ -173,7 +176,7 @@ authorizes ERC-20 approval and route transaction submission. The CLI obtains
 and prints a fresh quote before executing it; it does not ask again.
 
 ```sh
-npm run dev -- bridge send \
+akashx bridge send \
   --environment testnet \
   --amount 1 \
   --from-chain 11155111 \
@@ -200,7 +203,7 @@ not the ERC-20 approval hash:
 ```sh
 export BRIDGE_TX_HASH='0x_YOUR_SEPOLIA_BRIDGE_TRANSACTION_HASH'
 
-npm run dev -- bridge status "$BRIDGE_TX_HASH" \
+akashx bridge status "$BRIDGE_TX_HASH" \
   --chain-id 11155111
 ```
 

@@ -79,7 +79,7 @@ compute provider.
 Read-only CLI quote example, using a placeholder recipient:
 
 ```sh
-npm run dev -- bridge quote \
+akashx bridge quote \
   --environment testnet \
   --amount 1 \
   --from-chain 11155111 \

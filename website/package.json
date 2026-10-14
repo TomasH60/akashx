@@ -1,0 +1,23 @@
+{
+  "name": "akashx-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/check-links.mjs",
+    "check": "astro check",
+    "preview": "astro preview",
+    "predev": "node scripts/sync-docs.mjs",
+    "prebuild": "node scripts/sync-docs.mjs",
+    "precheck": "node scripts/sync-docs.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/starlight": "^0.42.6",
+    "astro": "^7.3.8",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": "^22.18.0 || ^24.0.0"
+  }
+}
