@@ -1,0 +1,67 @@
+---
+title: Your terminal. The decentralized cloud.
+description: Build on Akash with a CLI for wallets, cross-chain funding, and tenant deployments.
+template: splash
+hero:
+  title: Your terminal.<br />The decentralized cloud.
+  tagline: Create a wallet, bridge your funds, and deploy a workload. One CLI, from the first quote to the last log line.
+  actions:
+    - text: Get started
+      link: ./getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/TomasH60/akashx
+      icon: external
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## A clear path from wallet to workload
+
+<CardGrid>
+  <Card title="Own your wallet" icon="seti:lock">
+    Create encrypted local wallets. Choose the right account and network before you sign.
+  </Card>
+  <Card title="Fund across chains" icon="random">
+    Inspect a Skip Go quote, submit a bridge, and track each transaction along its route.
+  </Card>
+  <Card title="Deploy on Akash" icon="rocket">
+    Validate your SDL, choose a provider, create a lease, and send your manifest.
+  </Card>
+  <Card title="Keep control" icon="terminal">
+    Inspect readiness, follow logs, resume interrupted deployments, and close workloads when
+    finished.
+  </Card>
+</CardGrid>
+
+## Pick your next step
+
+<CardGrid>
+  <LinkCard
+    title="Deploy your first workload"
+    description="The tenant workflow, from configuration to cleanup."
+    href="./guides/tenant-cli/"
+  />
+  <LinkCard
+    title="Try a testnet bridge"
+    description="Sepolia USDC → Injective → Osmosis testnet."
+    href="./guides/testnet-bridge/"
+  />
+  <LinkCard
+    title="Explore the commands"
+    description="Find the command for each stage of your workflow."
+    href="./commands/"
+  />
+  <LinkCard
+    title="Run a local provider"
+    description="The separate Windows / WSL lab setup."
+    href="./guides/local-provider/"
+  />
+</CardGrid>
+
+:::note[Development status]
+akashx is under active development. Tenant commands default to `sandbox-2` and live
+end-to-end tenant deployment validation is still required. Bridge routes and network
+availability can change. Read the relevant runbook before submitting transactions.
+:::

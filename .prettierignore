@@ -2,3 +2,8 @@ node_modules/
 dist/
 coverage/
 package-lock.json
+
+website/.astro/
+website/dist/
+website/src/content/docs/guides/
+website/package-lock.json

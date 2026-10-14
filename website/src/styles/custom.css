@@ -1,0 +1,29 @@
+:root {
+  --sl-color-accent-low: #3b1815;
+  --sl-color-accent: #e9513b;
+  --sl-color-accent-high: #ffc4b8;
+  --sl-font: 'Inter', system-ui, sans-serif;
+  --sl-content-width: 49rem;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #ffe6df;
+  --sl-color-accent: #b93220;
+  --sl-color-accent-high: #5f1e15;
+}
+.site-title {
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+.hero h1 {
+  letter-spacing: -0.055em;
+  max-width: 13ch;
+}
+.hero .tagline {
+  max-width: 42ch;
+}
+.card {
+  border-radius: 0.8rem;
+}
+.expressive-code .frame {
+  border-radius: 0.6rem;
+}

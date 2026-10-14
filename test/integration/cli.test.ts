@@ -5,20 +5,36 @@ import { describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 
 function runCli(...args: string[]) {
-  return spawnSync(process.execPath, ['--import', 'tsx', 'bin/dev.js', ...args], {
+  const result = spawnSync(process.execPath, ['--import', 'tsx', 'bin/dev.js', ...args], {
     cwd: root,
     encoding: 'utf8',
     timeout: 10_000,
   });
+  if (result.error) throw result.error;
+  return result;
 }
 
-describe('CLI', () => {
+// Help discovery starts multiple CLI processes; each retains its 10-second limit.
+describe('CLI', { timeout: 45_000 }, () => {
   it('shows root help', () => {
     const result = runCli('--help');
 
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('USAGE');
     expect(result.stdout).toContain('hello');
+    expect(result.stdout).toContain('bridge');
+    expect(result.stdout).toContain('wallet');
+
+    const bridgeHelp = runCli('bridge', '--help');
+    expect(bridgeHelp.status, bridgeHelp.stderr).toBe(0);
+    expect(bridgeHelp.stdout).toContain('quote');
+    expect(bridgeHelp.stdout).toContain('send');
+
+    const walletHelp = runCli('wallet', '--help');
+    expect(walletHelp.status, walletHelp.stderr).toBe(0);
+    expect(walletHelp.stdout).toContain('create');
+    expect(walletHelp.stdout).toContain('import');
+    expect(walletHelp.stdout).toContain('address');
   });
 
   it('greets the world by default', () => {
