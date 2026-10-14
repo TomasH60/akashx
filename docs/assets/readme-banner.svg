@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">akashx — Your terminal. The decentralized cloud.</title>
+  <desc id="description">Akash CLI banner with wallet, bridge, and deployment commands on a dark terminal panel.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11151e"/>
+      <stop offset="1" stop-color="#19151a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(490 340) rotate(-35) scale(540 320)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff654f" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#ff654f" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#ffffff" stroke-opacity=".035"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="360" rx="22" fill="url(#background)"/>
+  <rect width="1200" height="360" rx="22" fill="url(#grid)"/>
+  <rect width="1200" height="360" rx="22" fill="url(#glow)"/>
+  <rect x=".5" y=".5" width="1199" height="359" rx="21.5" stroke="#ffffff" stroke-opacity=".1"/>
+  <path d="M57 70 69 49H79L91 70H81L74 58 67 70Z" fill="#ff735e"/>
+  <text x="105" y="65" fill="#b1b7c4" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" letter-spacing="3">THE AKASH CLI</text>
+  <text x="54" y="160" fill="#f6f7fa" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="800" letter-spacing="-5">akash<tspan fill="#ff735e">x</tspan></text>
+  <text x="58" y="209" fill="#f6f7fa" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500">Your terminal.</text>
+  <text x="58" y="244" fill="#a8afbf" font-family="system-ui, -apple-system, sans-serif" font-size="24">The decentralized cloud.</text>
+  <path d="M58 285H88" stroke="#ff735e" stroke-width="3"/>
+  <text x="102" y="290" fill="#b1b7c4" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="13" letter-spacing="1">WALLET / BRIDGE / DEPLOY</text>
+  <rect x="601" y="48" width="542" height="264" rx="12" fill="#0d1118" stroke="#303541"/>
+  <path d="M602 91H1142" stroke="#282d38"/>
+  <circle cx="624" cy="70" r="5" fill="#ff735e"/>
+  <circle cx="643" cy="70" r="5" fill="#d6ac67"/>
+  <circle cx="662" cy="70" r="5" fill="#83b89c"/>
+  <text x="1117" y="75" text-anchor="end" fill="#737e91" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="12">~/akashx</text>
+  <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="17">
+    <text x="627" y="134" fill="#c9d1df"><tspan fill="#ff735e">❯</tspan> akashx wallet create</text>
+    <text x="627" y="177" fill="#c9d1df"><tspan fill="#ff735e">❯</tspan> akashx bridge quote --help</text>
+    <text x="627" y="220" fill="#c9d1df"><tspan fill="#ff735e">❯</tspan> akashx deployment --help</text>
+    <text x="627" y="270" fill="#ff735e">❯</text>
+  </g>
+  <rect x="649" y="255" width="9" height="18" rx="1" fill="#ff735e"/>
+</svg>
