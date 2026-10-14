@@ -1,6 +1,10 @@
 import { Command } from '@oclif/core';
 import chalk from 'chalk';
-import { getWalletPassword, getWalletPath, walletFileFlag } from '../../lib/wallet-flags.js';
+import {
+  getWalletPassword,
+  getConfiguredWalletPath,
+  walletFileFlag,
+} from '../../lib/wallet-flags.js';
 import { WalletService, WalletServiceError } from '../../services/wallet-service.js';
 
 export default class WalletImport extends Command {
@@ -23,7 +27,7 @@ export default class WalletImport extends Command {
 
     try {
       const result = await new WalletService().import(
-        getWalletPath(flags['wallet-file']),
+        await getConfiguredWalletPath(flags['wallet-file']),
         getWalletPassword(),
         mnemonic,
       );

@@ -1,3 +1,4 @@
+import { readConfig } from '../services/config-service.js';
 import { Flags } from '@oclif/core';
 import { resolveWalletPath } from '../services/wallet-service.js';
 
@@ -17,4 +18,8 @@ export function getWalletPassword(): string {
     throw new Error('Set AKASHX_WALLET_PASSWORD to unlock the encrypted wallet.');
   }
   return password;
+}
+
+export async function getConfiguredWalletPath(path?: string): Promise<string> {
+  return getWalletPath(path ?? (await readConfig()).walletFile);
 }

@@ -2,6 +2,7 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { fromBech32 } from '@cosmjs/encoding';
 import { WalletService, WalletServiceError } from '../../src/services/wallet-service.js';
 
 const mnemonic = `${'abandon '.repeat(23)}art`;
@@ -32,6 +33,13 @@ describe('WalletService', () => {
     expect((await loaded.signer.getAccounts())[0]?.address).toBe(imported.address);
     expect((await service.loadForPrefix(path, password, 'osmo')).address).toMatch(/^osmo1/);
     expect((await service.loadForPrefix(path, password, 'noble')).address).toMatch(/^noble1/);
+    const injective = await service.loadForPrefix(path, password, 'inj');
+    expect(injective.address).toMatch(/^inj1/);
+    expect((await injective.signer.getAccounts())[0]?.algo).toBe('ethsecp256k1');
+    expect(fromBech32(injective.address, 90).data).not.toEqual(
+      fromBech32(imported.address, 90).data,
+    );
+    expect((await service.load(path, password)).address).toBe(imported.address);
     expect(stored).not.toContain('abandon');
     expect((await stat(path)).mode & 0o777).toBe(0o600);
   });

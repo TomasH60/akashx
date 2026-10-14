@@ -1,265 +1,298 @@
-# Agent handoff: mainnet USDC to Akash AKT sequence diagram
+# Agent handoff: Sepolia USDC to Osmosis testnet USDC sequence diagram
 
 ## Task
 
 Use the available Enterprise Architect (EA) MCP tools to create a native UML
-sequence diagram in the connected EA repository for this project's mainnet
-cross-chain swap. Create editable EA elements, lifelines, messages, notes, and
-combined fragments; a Mermaid/PlantUML snippet or an imported image alone is
-not the deliverable.
+sequence diagram in the connected EA repository for this project's testnet
+bridge. Create editable EA elements, lifelines, messages, notes, and combined
+fragments. A Mermaid/PlantUML snippet or imported image alone is not the deliverable.
 
-Diagram title: **akashx — Mainnet EVM USDC to Akash AKT via Skip Go**.
+Diagram title: **akashx — Sepolia USDC to Osmosis Testnet USDC via Skip Go**.
 
-Model the intended mainnet behavior, informed by the current implementation.
-This is a modeling task: do not execute a transfer, request secrets, or modify
-the application code.
+Model the route below and distinguish intended protocol execution from the
+current CLI's implementation and unresolved compatibility. This is a modeling
+task: do not execute transfers, request secrets, or change application code.
 
-## Scenario and assumptions
+## Scenario and observed route
 
-Use Base as the concrete source EVM chain, matching the CLI examples. The
-illustrative asset path is:
+A read-only Skip route request on **2026-10-08** returned this path for 1 USDC:
 
 ```text
-Base mainnet: native USDC
-  → Circle CCTP burn / attestation / mint
-Noble: USDC
+Ethereum Sepolia (11155111): USDC
+  → CCTP V2 burn / Circle attestation / relayed mint
+Injective testnet (EVM view: 1439; Cosmos view: injective-888): USDC
   → IBC transfer
-Osmosis: USDC representation → swap → AKT representation
-  → IBC transfer back to Akash
-Akash mainnet: native AKT at the supplied akash1… address
+Cosmos provider testnet (provider): IBC USDC
+  → IBC forwarding
+Osmosis testnet (osmo-test-5): IBC USDC at the supplied osmo1… address
 ```
 
-This is a **representative architecture assumption, not a verified live quote**.
-Skip chooses the actual bridges, chains, swaps, and transaction count. Before
-labeling this as a currently executable route, check current official
-documentation and, if available, read-only Skip chain/asset/route discovery.
-The public Skip Go UI currently includes a Noble USDC.n deprecation notice, so
-do not infer current route availability from the testnet runbook. If discovery
-selects another path, document the difference and either model the verified
-path or retain this path explicitly labeled illustrative. Never fabricate a
-successful quote or claim a transfer was executed.
+The quote returned `does_swap: false`, `txs_required: 2`, and required addresses
+for `11155111`, `injective-888`, `provider`, and `osmo-test-5`. Its first operation
+was `cctp_transfer_v2` with `tx_index: 0`; the two IBC operations shared
+`tx_index: 1`. The CCTP operation had `smart_relay: true`; both IBC operations
+had `smart_relay: false`. These flags do not mean IBC needs no relayers.
 
-Use `--environment mainnet` explicitly; this project's default is testnet.
-Use symbolic amounts (`amountIn`, `estimatedAKT`, `minimumAKT`) and placeholder
-addresses. Do not invent exchange rates, fees, pool IDs, contract addresses,
-IBC channels, CCTP versions/domains, or precise completion times. Resolve such
-details from route metadata only if needed. An example input is 5 USDC with
-1% slippage, not a promise that this amount is routable.
+This is **a successfully returned quote, not a successfully executed transfer**.
+Refresh read-only discovery/quoting before modeling if available, and record
+any route changes. Do not treat the snapshot as a permanent route guarantee.
+The quote does not prove that the installed SDK and current wallet implementation
+can execute the Injective portion.
 
-The destination is the **Akash blockchain**, not a provider, deployment,
-escrow account, or Akash compute service. Receiving AKT completes this scope.
+The source token contract in that quote was:
 
-## Read these local sources first
+```text
+0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
+```
+
+The destination USDC denomination was:
+
+```text
+ibc/91641A4DFC4270AA1FAB8DD7E5EFD1014A1616AA93C539B3536C8ED2D0C03289
+```
+
+The intermediate Injective Cosmos denomination was
+`erc20:0x0C382e685bbeeFE5d3d9C29e29E341fEE8E84C5d`.
+Use these as snapshot metadata, rechecking before reuse. Use symbolic amounts
+(`amountIn`, `estimatedUSDC`) in diagram messages because fees/output change.
+Do not invent contracts, IBC channels, exact delays, or successful transaction hashes.
+
+There is no token swap in this route. Final USDC is an IBC representation on
+Osmosis, not newly issued native Osmosis USDC. Noble, Base, Akash, and AKT are
+outside this diagram. The `provider` chain is a Cosmos testnet, not an Akash
+compute provider.
+
+## Local implementation references
 
 - `src/commands/bridge/quote.ts`: read-only quote command and displayed fields.
-- `src/commands/bridge/send.ts`: explicit `--yes` submission authorization,
-  configuration, quote/progress callbacks, and lazy Cosmos wallet loading.
-- `src/services/skip-service.ts`: route resolution, SDK integration, signer
-  selection, execution callbacks, and status lookup. This is the main source
-  of truth for application behavior.
-- `src/lib/bridge-flags.ts`: environment and slippage defaults.
-- `src/services/wallet-service.ts`: local Cosmos signing wallet behavior.
-- `src/commands/bridge/status.ts`: independent status query.
-- `SKIP_GO_TESTNET_BRIDGE.md`: context for asynchronous CCTP settlement only.
-  Do not copy Sepolia, `grand-1`, testnet endpoints, or the Noble-only destination
-  into this mainnet diagram.
+- `src/commands/bridge/send.ts`: required `--yes`, configuration, fresh quote,
+  progress callbacks, and lazy Cosmos wallet loading.
+- `src/services/skip-service.ts`: discovery, route resolution, signer/address
+  mapping, execution callbacks, and status lookup; primary application reference.
+- `src/services/wallet-service.ts`: `loadForPrefix` and the current
+  `DirectSecp256k1HdWallet` construction.
+- `src/lib/bridge-flags.ts`: environment/slippage defaults.
+- `src/commands/bridge/status.ts`: one status lookup per invocation.
+- `SKIP_GO_TESTNET_BRIDGE.md`: existing Sepolia-to-Noble runbook, for CCTP context
+  only. Do not copy its Noble destination into this diagram.
 
-## Lifelines and visual organization
+Read-only CLI quote example, using a placeholder recipient:
 
-Arrange left to right in application, orchestration, and settlement groups:
+```sh
+npm run dev -- bridge quote \
+  --environment testnet \
+  --amount 1 \
+  --from-chain 11155111 \
+  --from-token USDC \
+  --to-chain osmo-test-5 \
+  --to-token USDC \
+  --to-address 'osmo1_YOUR_TESTNET_ADDRESS'
+```
 
-| Lifeline                         | Responsibility                                                                  |
-| -------------------------------- | ------------------------------------------------------------------------------- |
-| User                             | Requests quote and authorizes submission                                        |
-| akashx CLI / SkipService         | Resolves inputs, configures route, maps addresses, reports progress             |
-| Local signer(s)                  | viem EVM signer; optional encrypted Cosmos wallet signer                        |
-| Skip Go SDK                      | `executeRoute`, signer callbacks, transaction execution and tracking            |
-| Skip Go API                      | Chain/asset discovery, route planning, transaction construction/status services |
-| Base RPC / USDC + CCTP contracts | Source allowance and burn transaction execution                                 |
-| Circle attestation service       | Attests the finalized CCTP message                                              |
-| Smart relayer / IBC relayers     | Submit destination transactions and relay IBC packets/proofs                    |
-| Noble chain / CCTP module        | Validate attestation, mint USDC, initiate onward IBC transfer                   |
-| Osmosis chain / swap execution   | Receive USDC, execute swap, send AKT over IBC                                   |
-| Akash chain / recipient account  | Receive native AKT and record final settlement                                  |
+Use `--environment testnet` explicitly. Do not enable `--allow-swap` for this
+scenario. If the symbol becomes ambiguous, use the full destination denom above.
+The example is for quoting; the modeling task does not authorize `bridge send`.
 
-The combined relayer lifeline is a visual simplification: CCTP smart relaying
-and IBC relaying have distinct roles. Add a note explaining this. If the
-diagram becomes too wide, use an interaction reference to a second settlement
-sequence rather than dropping the swap or final Akash delivery.
+## Lifelines and organization
+
+Arrange application, orchestration, and settlement participants left to right:
+
+| Lifeline                            | Responsibility                                                            |
+| ----------------------------------- | ------------------------------------------------------------------------- |
+| User                                | Requests quote and authorizes hypothetical execution                      |
+| akashx CLI / SkipService            | Resolves inputs, maps addresses/signers, reports progress                 |
+| Local signer(s)                     | Sepolia viem signer and intermediate Cosmos signer(s)                     |
+| Skip Go SDK                         | Execute route, request signatures, broadcast and track                    |
+| Skip Go API                         | Discover assets/chains, plan route, construct transactions, report status |
+| Sepolia RPC / USDC + CCTP contracts | Allowance, source burn, confirmation                                      |
+| Circle attestation service          | Attest the source CCTP message after required finality                    |
+| CCTP smart relayer                  | Fetch attestation and submit destination mint                             |
+| Injective testnet                   | Receive CCTP USDC, execute onward Cosmos IBC transaction                  |
+| IBC relayers                        | Relay packets, proofs, acknowledgements, and timeouts                     |
+| Cosmos provider testnet             | Receive and forward IBC USDC toward Osmosis                               |
+| Osmosis testnet / recipient         | Receive IBC USDC at osmo1…                                                |
+
+Represent Injective's EVM and Cosmos interfaces on one chain lifeline with a
+note, or as two clearly linked lifelines of the same chain. Do not draw an
+additional bridge between these views without evidence from the transaction
+plan. CCTP smart relaying and IBC relaying are separate responsibilities.
+
+If the diagram becomes too wide, use a second settlement interaction referenced
+by `ref`. Preserve both IBC hops, the intermediate user transaction, and final delivery.
 
 ## Required sequence
 
 ### 1. Read-only quote
 
-1. User → CLI: `bridge quote(mainnet, Base, USDC, amountIn, Akash, AKT, recipient)`.
-2. CLI → API: discover chains/assets through the SDK. Show a `par` fragment
-   for these independent requests if practical. The implementation requests
-   EVM entries, uses `onlyTestnets: false`, and filters chains to mainnet.
-3. CLI: resolve chain/token references and convert the amount to atomic units.
-4. CLI → API: `route(...)` with `allowSwaps: true`, `allowMultiTx: true`,
+1. User → CLI: `bridge quote(testnet, Sepolia USDC, Osmosis USDC, amountIn)`.
+2. CLI → SDK → API: discover chains and assets, optionally in a `par` fragment.
+   Include EVM entries, request `onlyTestnets: true`, and filter chains to testnets.
+3. CLI: resolve assets/chains and convert the input amount to atomic units.
+4. CLI → SDK → API: `route(...)`, with `allowSwaps: false`, `allowMultiTx: true`,
    `allowUnsafe: false`, `smartRelay: true`, and source/destination asset IDs.
-   The implementation also enables EVM swaps and split routes on mainnet.
-5. API → CLI: route operations, estimated output, fees, duration,
+   Do not show mainnet-only smart-swap options in this request.
+5. API → SDK → CLI: operations, estimated USDC output, fees, duration,
    `requiredChainAddresses`, and `txsRequired`.
-6. CLI → User: quote, minimum received, price impact, fees, and warnings.
-   Note that the displayed minimum is calculated from the estimated output
-   and requested slippage; it is not evidence of settlement.
+6. CLI → User: quote and warnings, including two route transactions for the
+   observed path. The displayed slippage-based minimum is a CLI calculation;
+   it does not imply a DEX swap or confirmed delivery.
 
-No signing or broadcast occurs in this phase. The current quote request does
-not send the recipient address to `route`; addresses are mapped for execution.
+No signing or broadcast occurs here. The current `route` request does not
+include the destination address; it is mapped during execution.
 
-### 2. Authorized execution and signer preparation
+### 2. Authorization and signer preparation
 
-7. User → CLI: `bridge send(..., --environment mainnet, --yes)`.
-   `--yes` authorizes approval and transfer submission. Do not invent an
-   interactive confirmation after the quote: `send` gets and prints a fresh
-   quote and then proceeds under that authorization.
-8. CLI → Local signer: construct viem signer from locally configured EVM key;
-   signer/RPC → CLI: source chain ID. Never show key material in messages.
-9. CLI → API: resolve a fresh route; CLI checks the RPC chain matches the
-   resolved source chain and reports the new quote.
-10. CLI: map `requiredChainAddresses`:
-    - Source EVM chain → configured EVM account.
-    - Destination Akash chain → user-supplied `akash1…` address.
-    - Other required Cosmos chains → derive/load an account for the chain's
-      Bech32 prefix from the encrypted CLI wallet.
-11. CLI → SDK: `executeRoute(route, userAddresses, signer callbacks, slippage)`.
-    Show an `opt [intermediate Cosmos address/signature required]` for local
-    wallet use. A required address does not itself prove that a separate
-    user-signed transaction is necessary; follow the returned transaction plan.
+7. User → CLI: hypothetical `bridge send(..., --environment testnet, --yes)`.
+   Model this interaction without executing it. `--yes` authorizes approval and
+   route submission; the current CLI does not prompt again after printing its quote.
+8. CLI → Local signer / Sepolia RPC: initialize EVM signer and read chain ID.
+   Show no private key material. Expected source chain ID is `11155111`.
+9. CLI → SDK → API: get a fresh route; validate RPC/source-chain match and print
+   the new quote. A previous quote is not a reservation.
+10. CLI: map the observed required addresses:
+    - `11155111` → configured EVM account.
+    - `injective-888` → intermediate Cosmos account with `inj` prefix.
+    - `provider` → intermediate Cosmos account with `cosmos` prefix.
+    - `osmo-test-5` → supplied `osmo1…` recipient.
+11. CLI → local wallet: load intermediate signers through `loadForPrefix`.
+    Note the compatibility limitation below. A required address alone does not
+    mean its owner must submit a separate transaction.
+12. CLI → SDK: `executeRoute(route, userAddresses, signer callbacks, slippage)`.
+    SDK ↔ API: obtain executable transaction plan as needed; use exact internal
+    API message names only after checking the installed SDK or official docs.
 
-The CLI signs locally. MetaMask and Keplr are not runtime signing dependencies
-of this implementation. The destination can be an external recipient; merely
-receiving AKT does not require its private key. The current service supplies
-Cosmos signers for intermediate chains only and would fail if execution asked
-it for a destination-chain signer. It also supports only the configured source
-EVM signer. Note these constraints instead of drawing unsupported behavior.
+**Compatibility note required on the diagram:** The current wallet creates a
+`DirectSecp256k1HdWallet` with a changed Bech32 prefix. Merely producing an
+`inj1…` string does not establish compatible Injective key derivation, account
+mapping, or signing. Verify how the CCTP mint recipient maps to the Injective
+account that signs the subsequent IBC transaction, and whether the installed
+SDK supports that signer and CCTP V2 route. Until checked, label execution
+“intended flow; Injective signer compatibility unverified.” Do not model this
+as already working or add a new automatic compatibility check to the CLI.
 
-### 3. Source EVM transaction
+The service only exposes its configured source EVM signer and intermediate
+Cosmos signers. If the transaction plan needs an EVM signer on `1439`, the current
+service cannot supply it. It also cannot supply an Osmosis destination signer;
+ordinary receipt does not need one. MetaMask and Keplr are not runtime signing
+dependencies of this CLI.
 
-12. SDK ↔ API: obtain the route's executable transaction plan as needed
-    (conceptual SDK-internal step; use exact API operation names only if verified).
-13. SDK → Base: inspect USDC allowance for the route-specified spender.
-14. `opt [allowance insufficient]`: SDK → signer: sign approval; submit it to
-    Base; wait for confirmation. SDK → CLI: allowance progress callback.
-    An approval is not a bridge completion and need not be counted in `txsRequired`.
-15. SDK → signer: sign source route transaction; submit to Base.
-16. Base: execute the route's CCTP burn and emit the cross-chain message.
-17. SDK → CLI → User: source transaction hash via `onTransactionBroadcast`.
-    Place this notification at broadcast, before final source confirmation.
-18. Base confirms the transaction and reaches required finality. Add a note:
-    **Source transaction success does not mean AKT has arrived on Akash.**
+### 3. Sepolia source transaction (route transaction index 0)
 
-### 4. Asynchronous cross-chain settlement
+13. SDK → Sepolia: inspect USDC allowance for the route-specified spender.
+14. `opt [allowance insufficient]`: SDK → signer: sign approval; broadcast to
+    Sepolia and await confirmation. SDK → CLI: approval progress callback.
+    Approval is additional to the quoted route transaction count as applicable.
+15. SDK → signer: sign source route transaction; broadcast to Sepolia.
+16. SDK → CLI → User: source hash via `onTransactionBroadcast`, at broadcast time.
+17. Sepolia executes the CCTP V2 burn and emits its message; await required finality.
+    Note: **A successful Sepolia transaction does not mean USDC reached Osmosis.**
 
-19. Circle observes the source CCTP message/finality and produces its signed
-    attestation. Relayer ↔ Circle: retrieve attestation, using a
-    `loop [attestation pending]` if appropriate.
-20. Smart relayer → Noble: submit CCTP message plus attestation. Noble validates
-    it and mints USDC to the route-specified recipient. Circle does not mint AKT.
-21. Route execution on Noble initiates an IBC transfer toward Osmosis. Model
-    the actual trigger/signature as route-dependent; do not assume minting alone
-    automatically starts an IBC transfer.
-22. IBC relayer relays the packet/proof to Osmosis; Osmosis validates and
-    receives the USDC representation. Show acknowledgement conceptually.
-23. Osmosis executes the route's USDC → AKT swap, subject to its minimum-output
-    constraints. The trade may use multiple pools; one message is sufficient
-    at this abstraction level. AKT here is an IBC representation.
-24. Osmosis initiates the onward AKT IBC transfer. IBC relayer delivers it to
-    Akash; Akash validates it and credits native AKT to the recipient for the
-    assumed return-to-origin path. Show acknowledgement back to the sending
-    chain, mediated by relaying rather than a direct RPC call between chains.
+### 4. CCTP settlement and onward Cosmos transaction
 
-Steps 19–24 describe the illustrative route, not hard-coded CLI logic. Mark
-them accordingly. Use asynchronous messages for relaying; relayers submit
-proofs/transactions while chains validate and execute state changes.
+18. Circle observes the source message/finality and produces an attestation.
+    CCTP relayer ↔ Circle: retrieve attestation, with `loop [attestation pending]`.
+19. CCTP relayer → Injective EVM interface (`1439`): submit message and attestation.
+    Injective validates and mints USDC to the route-specified recipient.
+20. SDK tracks arrival and readiness for the next route transaction. The mint
+    does not itself imply that a user-authorized IBC transaction has been sent.
+21. SDK → intermediate signer: request the Injective Cosmos transaction signature
+    for the onward transfer (`tx_index: 1`), subject to the compatibility note.
+    Require the correct account and available testnet gas under the actual plan.
+22. SDK → Injective Cosmos interface (`injective-888`): broadcast the signed
+    transaction; SDK → CLI → User: intermediate transaction hash/progress.
+23. Injective executes the transfer and emits an IBC packet toward `provider`.
+24. IBC relayer → provider: relay packet/proof; provider validates and receives
+    the USDC representation, then forwards it toward `osmo-test-5` using the
+    route's forwarding instructions. The quote groups both hops into transaction
+    index 1; do not invent a third user-signed transaction on provider.
+25. IBC relayer → Osmosis: relay onward packet/proof; Osmosis validates and credits
+    IBC USDC at `osmo1…`. Show acknowledgements relayed back along the path,
+    respecting forwarding semantics rather than direct chain-to-chain RPC calls.
+
+These are protocol/SDK-level interactions inferred from the observed operations,
+not methods implemented directly in `SkipService`. Verify exact transaction
+construction, forwarding mechanisms, and signer needs from the plan. Avoid
+inventing a DEX swap, conversion to AKT, or a later transfer to Akash.
 
 ### 5. Tracking and completion
 
-25. SDK ↔ API: track route progress during execution; callbacks → CLI → User:
-    transaction broadcast/completion updates. Per-transaction completion is
-    distinct from end-to-end route success.
-26. In a separate `loop [while pending; user repeats status command]`, show
-    User → CLI: `bridge status(sourceTxHash, sourceChainId)`;
-    CLI → API: `transactionStatus({ chainId, txHash })`;
-    API → CLI → User: transfer states and explorer links.
-    The CLI command performs one lookup per invocation, not its own polling loop.
-27. Show successful route completion only after final Akash delivery is
-    confirmed. The current status command prints returned transfer states;
-    do not invent a separate balance-verification call in the implementation.
+26. During execution, SDK ↔ API: track progress; SDK → CLI → User: broadcast and
+    completion callbacks. Individual transaction completion is not final route success.
+27. In `loop [while pending; user repeats status command]`, show User → CLI:
+    `bridge status(sourceTxHash, --chain-id 11155111)`; CLI → API through SDK:
+    `transactionStatus({ chainId, txHash })`; return transfer states and explorer links.
+    Each CLI invocation performs one lookup, not an automatic polling loop.
+28. Show end-to-end success only after Osmosis delivery is confirmed. The current
+    status command prints returned states; it does not perform a separate balance check.
 
-Tracking can overlap settlement. Already-submitted relayed stages can continue
-without the CLI process, but routes requiring additional local signatures may
-need the process to continue. Do not promise background completion for every
-multi-transaction route.
+Tracking overlaps settlement. CCTP relaying may continue after the CLI exits,
+but this two-transaction route also needs the subsequent local signature and
+broadcast. Do not promise the whole route completes with the CLI stopped after
+the Sepolia burn, or imply that `bridge status` resumes execution.
 
-## Required alternative paths
+## Alternative paths
 
-Use compact `alt`, `opt`, or `break` fragments, with detailed notes if needed:
+Use concise `alt`, `opt`, or `break` fragments:
 
-- Unsupported asset/chain, no safe route, or unavailable liquidity: report the
-  route error before broadcast.
-- RPC/source-chain mismatch or unavailable required signer: abort execution.
-- Insufficient gas/balance or failed approval/source transaction: surface failure;
-  do not depict destination mint or AKT receipt as successful.
-- Attestation or relayer pending: keep tracking the existing source hash;
-  repeating `bridge send` would create a new transfer.
-- Swap minimum not met, IBC timeout, or downstream failure: report the affected
-  transfer state and recovery/refund information only when supplied by the
-  protocol/API. Funds may be on an intermediate chain. Do not show an atomic
-  rollback of the CCTP burn or a guaranteed refund to the source EVM account.
-- Status API failure: report a tracking error without equating it to lost funds
-  or a confirmed on-chain failure.
+- Missing asset/chain or no route: report before broadcast.
+- Wrong source RPC chain, unavailable wallet, unsupported signer, or incompatible
+  SDK transaction: show the applicable execution failure, distinguishing known
+  current checks from unresolved compatibility risks.
+- Insufficient source ETH/USDC, approval failure, or source transaction failure:
+  no successful downstream delivery on that branch.
+- Attestation or relayer pending: continue observing the existing transaction;
+  repeating `bridge send` initiates a new transfer.
+- Injective signature/gas/transaction failure after mint: funds can remain on
+  Injective; do not report Osmosis delivery or automatic rollback to Sepolia.
+- IBC timeout or forwarding failure: report actual transfer states and any
+  protocol/API-provided recovery information. Do not guarantee a source-EVM refund.
+- Status API error: tracking failure is not proof of on-chain transfer failure.
 
 ## Enterprise Architect MCP workflow
 
-1. Discover the actual EA MCP tools and inspect the connected model, selected
-   package, and existing diagrams. Do not invent tool names, IDs, or capabilities.
-2. Read any applicable model conventions. Reuse an appropriate package or
-   create a dedicated `akashx / Cross-chain funding` package where supported.
-   If a diagram with this title exists, inspect it before updating; preserve
-   unrelated model content and avoid duplicate lifelines on reruns.
-3. Create a UML Interaction and Sequence diagram using the repository's
-   supported structure. Add native participants/lifelines, ordered messages,
-   execution occurrences where supported, combined fragments, and notes.
-4. Use synchronous calls for local/API request-response work, dashed return
-   messages, and asynchronous messages for broadcast/events/relaying. Assign
-   explicit sequence ordering. Do not represent a multi-chain flow as one
-   synchronous transaction or a single atomic activation.
-5. Add phase labels and an assumption note describing the illustrative route,
-   mainnet scope, and distinction between application code and SDK/protocol
-   internals. Avoid putting secrets or actual wallet data into the model.
-6. Save, read the diagram/model back through MCP, and inspect a rendered preview
-   or export if supported. Check ordering, endpoint connections, fragment
-   coverage, readable labels, and that nothing overlaps or is clipped.
-7. If an MCP operation is unavailable, report the precise limitation and the
-   native model work completed. Do not claim an image-only substitute is an
-   editable EA sequence diagram.
+1. Discover actual EA MCP capabilities and inspect the connected model, selected
+   package, and diagrams. Do not invent tool names, IDs, or supported operations.
+2. Read model conventions. Reuse an appropriate package or create
+   `akashx / Cross-chain funding` where supported. Inspect any matching diagram
+   before updating; preserve unrelated content and avoid duplicates on reruns.
+3. Create a UML Interaction and Sequence diagram with native lifelines, ordered
+   messages, execution occurrences where supported, fragments, and notes.
+4. Use synchronous local/API calls, dashed returns, and asynchronous messages
+   for broadcast/events/relaying. Do not portray the route as one atomic transaction.
+5. Add phase labels, testnet chain IDs, quote observation date, and the distinction
+   between returned route, intended execution, and unverified CLI compatibility.
+6. Save and read the model back through MCP. Inspect a rendered preview/export
+   if available for sequence order, connections, fragments, overlaps, and clipping.
+7. If tools cannot create part of the native model, report the precise limitation
+   and completed work. Do not claim an image substitute meets the deliverable.
 
 ## Acceptance criteria and final report
 
-- The native EA diagram exists and is editable in the connected repository.
-- The reader can follow quote → authorization → signing/approval → source burn
-  → attestation → mint → IBC → swap → IBC → native AKT receipt.
-- The final asset is AKT on Akash; the flow does not stop at Noble USDC.
-- The diagram distinguishes CLI, SDK/API, local signers, relayers, and chains.
-- Mainnet assumptions and live-route verification status are explicit.
-- Conditional approval/signers, pending settlement, and downstream failures
-  are represented without implying atomic cross-chain rollback.
-- Return the EA package path, diagram name and GUID/ID, created/updated element
-  summary, any preview/export location, and unresolved assumptions/tool limits.
+- An editable native EA sequence diagram exists in the connected repository.
+- The flow is quote → authorization → allowance/signing → Sepolia burn →
+  attestation → Injective mint → intermediate signature/transaction → IBC to
+  provider → forwarding to Osmosis → USDC receipt.
+- Both route transactions and conditional ERC-20 approval are distinguishable.
+- Injective EVM/Cosmos views, provider forwarding, and Osmosis receipt are clear.
+- There is no swap and no Noble or Akash settlement stage.
+- The returned quote is not represented as an executed or fully validated CLI route.
+- Compatibility limits, pending settlement, and partial failures are visible.
+- Return EA package path, diagram name and GUID/ID, created/updated element summary,
+  preview/export location if available, and unresolved assumptions/tool limitations.
 
-## Official reference starting points
+## References and verification
 
-Local source code governs claims about this project's implementation. These
-references inform protocol context and should be rechecked during modeling:
+Local source code governs application behavior. The observed route came from a
+read-only POST to the [Skip route endpoint](https://api.skip.build/v2/fungible/route)
+with source chain `11155111`, destination `osmo-test-5`, the asset identifiers
+above, `amount_in: "1000000"`, `allow_multi_tx: true`, `allow_swaps: false`,
+`allow_unsafe: false`, `smart_relay: true`, and `cumulative_affiliate_fee_bps: "0"`.
 
-- [Skip Go](https://www.skip.build/) — routing product and documentation entry point.
-- [Skip Go application](https://go.skip.build/) — current asset availability notices;
-  a UI listing is not proof that a specific route is executable.
-- [Noble CCTP module](https://docs.noble.xyz/cctp/module_interface) — CCTP on Noble
-  is a Cosmos SDK module; CCTP and IBC can be composed.
-- [Osmosis integration documentation](https://docs.osmosis.zone/integrate/) —
-  swaps and cross-chain integration paths.
-- [Akash: AKT on Osmosis](https://akash.network/blog/how-to-access-and-provide-akt-token-liquidity-on-osmosis/)
-  — historical context for AKT trading on Osmosis, not a current route guarantee.
+- [Skip testnet chains](https://api.skip.build/v2/info/chains?only_testnets=true&include_evm=true)
+  — chain IDs and chain types.
+- [Skip testnet assets](https://api.skip.build/v2/fungible/assets?only_testnets=true&include_evm_assets=true)
+  — denominations; an asset listing alone does not establish a route.
+- [Skip](https://www.skip.build/) — official documentation entry point.
+
+Use current official Circle, Injective, and Skip documentation when resolving
+protocol/signing details. Record what was verified and what remains an assumption.

@@ -1,10 +1,19 @@
 # akashx
 
-A TypeScript CLI for Akash. It creates encrypted Akash wallets, checks provider status on
-the `sandbox-2` network, and quotes or submits cross-chain routes through Skip Go.
+A TypeScript CLI for Akash. It manages encrypted wallets, tenant deployments and leases,
+provider checks, and cross-chain routes through Skip Go. Tenant commands default to
+`sandbox-2`.
 
 Requires npm and Node.js 22.18+ (22.x) or 24.x. Provider status needs no wallet or separate
 `akt` install; submitting a bridge requires an EVM signer for the selected source chain.
+
+## Tenant deployments
+
+Commands are grouped as `config`, `doctor`, `wallet`, `fund`, `cert`, `deployment`,
+and `lease`. Start with `npm run dev -- doctor` and use the
+[tenant command guide](TENANT_CLI.md) for configuration, the manual deployment flow,
+and `deployment deploy --resume` recovery. Provider infrastructure and lab networking
+remain separate setup tasks. Live end-to-end deployment validation is still required.
 
 ## Wallet
 
@@ -38,7 +47,7 @@ npm run dev -- wallet address
 ```
 
 Use that address as `--to-address` when bridging USDC or AKT to Akash. The wallet service
-also exposes the unlocked `DirectSecp256k1HdWallet` signer for future Akash transaction
+also exposes the unlocked `DirectSecp256k1HdWallet` signer for Akash transaction
 commands.
 
 ## Try it

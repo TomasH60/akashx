@@ -2,7 +2,8 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'node:
 import { mkdir, open, readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, resolve } from 'node:path';
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { DirectSecp256k1HdWallet, type OfflineDirectSigner } from '@cosmjs/proto-signing';
+import { createInjectiveSigner } from './injective-signer.js';
 
 const ADDRESS_PREFIX = 'akash';
 const CIPHER = 'aes-256-gcm';
@@ -39,7 +40,7 @@ export interface ImportedWallet {
 }
 
 export interface LoadedWallet extends ImportedWallet {
-  readonly signer: DirectSecp256k1HdWallet;
+  readonly signer: OfflineDirectSigner;
 }
 
 export class WalletServiceError extends Error {
@@ -103,7 +104,11 @@ export class WalletService {
     }
 
     const signer =
-      prefix === ADDRESS_PREFIX ? akashSigner : await this.signerFromMnemonic(mnemonic, prefix);
+      prefix === ADDRESS_PREFIX
+        ? akashSigner
+        : prefix === 'inj'
+          ? await createInjectiveSigner(mnemonic)
+          : await this.signerFromMnemonic(mnemonic, prefix);
     return { address: await this.getSignerAddress(signer), path, signer };
   }
 
@@ -131,7 +136,7 @@ export class WalletService {
     return payload.mnemonic;
   }
 
-  private async getSignerAddress(signer: DirectSecp256k1HdWallet): Promise<string> {
+  private async getSignerAddress(signer: OfflineDirectSigner): Promise<string> {
     const account = (await signer.getAccounts())[0];
     if (!account) throw new WalletServiceError('The wallet has no accounts.');
     return account.address;

@@ -27,20 +27,50 @@
     "bin": "akashx",
     "dirname": "akashx",
     "commands": "./dist/commands",
-    "topicSeparator": " "
+    "topicSeparator": " ",
+    "topics": {
+      "config": {
+        "description": "Configure tenant networks and wallet selection"
+      },
+      "wallet": {
+        "description": "Create, import, inspect and fund wallet accounts"
+      },
+      "fund": {
+        "description": "Prepare native deployment funding"
+      },
+      "cert": {
+        "description": "Manage tenant client certificates"
+      },
+      "deployment": {
+        "description": "Create, run, inspect and close tenant workloads"
+      },
+      "lease": {
+        "description": "Inspect leases and accept provider bids"
+      },
+      "provider": {
+        "description": "Inspect registered providers"
+      },
+      "bridge": {
+        "description": "Quote, send and track cross-chain transfers"
+      }
+    }
   },
   "dependencies": {
     "@akashnetwork/chain-sdk": "1.0.0-alpha.45",
+    "@cosmjs/crypto": "^0.38.1",
+    "@cosmjs/encoding": "^0.38.1",
     "@cosmjs/proto-signing": "~0.38.0",
     "@oclif/core": "^5.1.2",
     "@skip-go/client": "^1.6.6",
     "chalk": "^6.0.1",
     "protobufjs": "^8.8.0",
-    "viem": "^2.57.3"
+    "viem": "^2.57.3",
+    "ws": "^8.22.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.20.4",
+    "@types/ws": "^8.18.2",
     "eslint": "^10.11.0",
     "prettier": "^3.9.9",
     "tsx": "^4.23.15",

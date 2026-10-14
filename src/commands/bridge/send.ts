@@ -1,7 +1,11 @@
 import { Command, Flags } from '@oclif/core';
 import chalk from 'chalk';
 import { bridgeFlags, parseEnvironment, parseSlippage } from '../../lib/bridge-flags.js';
-import { getWalletPassword, getWalletPath, walletFileFlag } from '../../lib/wallet-flags.js';
+import {
+  getWalletPassword,
+  getConfiguredWalletPath,
+  walletFileFlag,
+} from '../../lib/wallet-flags.js';
 import { SkipService, SkipServiceError } from '../../services/skip-service.js';
 import { WalletService } from '../../services/wallet-service.js';
 
@@ -33,7 +37,7 @@ export default class BridgeSend extends Command {
 
     try {
       const walletService = new WalletService();
-      const walletPath = getWalletPath(flags['wallet-file']);
+      const walletPath = await getConfiguredWalletPath(flags['wallet-file']);
       const walletPassword = getWalletPassword();
       const result = await new SkipService(undefined, environment).submitBridge(
         {
