@@ -5,14 +5,17 @@ import { describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 
 function runCli(...args: string[]) {
-  return spawnSync(process.execPath, ['--import', 'tsx', 'bin/dev.js', ...args], {
+  const result = spawnSync(process.execPath, ['--import', 'tsx', 'bin/dev.js', ...args], {
     cwd: root,
     encoding: 'utf8',
     timeout: 10_000,
   });
+  if (result.error) throw result.error;
+  return result;
 }
 
-describe('CLI', () => {
+// Help discovery starts multiple CLI processes; each retains its 10-second limit.
+describe('CLI', { timeout: 45_000 }, () => {
   it('shows root help', () => {
     const result = runCli('--help');
 
